@@ -1,6 +1,8 @@
-from locust import HttpLocust, TaskSet, task
 import json
 import base64
+
+import numpy as np
+from locust import HttpLocust, TaskSet, task
 
 
 def img2json(path):
@@ -27,9 +29,10 @@ class MyTaskSet(TaskSet):
             url='/stream_predict',
             data=jsonData,
             headers={'Content-type': 'application/json', "Connection": "keep-alive"})
-        print("LOGIN RESULT:", response.status_code, response.content)
+        # print("LOGIN RESULT:", response.status_code, response.content)
         if response.status_code == 200:
-            print(response)
+            res = np.array(response.json()['result']).shape
+            print(res)
             
 
     @task(1)  # 1代表权重
