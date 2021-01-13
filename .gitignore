@@ -2,3 +2,5 @@
 *.weights
 *.onnx
 *.pth
+/.idea/
+*/__pycache__
