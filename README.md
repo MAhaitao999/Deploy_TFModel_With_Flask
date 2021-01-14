@@ -10,7 +10,7 @@ deploy your TensorFlow model with Flask
 
 - Locust: `pip install locustio==0.11.0`, please refer to `loadtest/Locust` directory;
 
-- wrk: A very good pressure testing tool, but need to use Lua language, I don't know how to use Lua language to Base64 encode pictures(if you know please tell me in the issue). If you want to try the wrk, please start the service through the command `python3 main_ service_ streamer_ wrk.py` and refer to the `loadtest/wrk` directory for testing.
+- wrk: A very good pressure testing tool, but need to use Lua language, I don't know how to use Lua language to Base64 encode pictures(if you know please tell me in the issue). If you want to try the wrk, please start the service through the command `python3 main_service_streamer_wrk.py` and refer to the `loadtest/wrk` directory for testing.
 
 ```
 sudo apt-get install libssl-dev
