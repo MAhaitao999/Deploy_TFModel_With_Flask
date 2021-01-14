@@ -26,7 +26,7 @@ from service_streamer import ThreadedStreamer
 
 def preprocess_image(image, target_size):
     if image.mode != 'RGB':
-        image = image.convert("RGB")
+        image = image.convert('RGB')
     image = image.resize(target_size)
     image = img_to_array(image)
     image = np.expand_dims(image, axis=0)
@@ -52,23 +52,23 @@ class BaseAPP(object):
         """
         Load trained model.
         """
-        print("Loading model...")
+        print('Loading model...')
 
         with tf.io.gfile.GFile(model_filepath, 'rb') as f:  # tf.gfile.GFile
             graph_def = tf.compat.v1.GraphDef()  # tf.GraphDef
             graph_def.ParseFromString(f.read())
 
         with self.graph.as_default():
-            tf.import_graph_def(graph_def, name="")
+            tf.import_graph_def(graph_def, name='')
         self.graph.finalize()
 
-        print("Model loading complete!")
+        print('Model loading complete!')
         self.sess = tf.compat.v1.Session(graph=self.graph)  # tf.Session
 
     def forward(self, feet_data):
-        print("========Current batch is: ========", len(feet_data[0]))
+        # print('========Current batch is: ========', len(feet_data[0]))
         if len(feet_data) != len(self.input_names):
-            raise Exception("The number of feed_data must satisfy with the length of list input_names!")
+            raise Exception('The number of feed_data must satisfy with the length of list input_names!')
         input_ = {}
         for i in range(len(self.input_names)):
             input_[self.graph.get_tensor_by_name(self.input_names[i])] = feet_data[i]
@@ -82,8 +82,7 @@ class BaseAPP(object):
         return results
 
 
-model_name = "frozen_darknet_yolov3_model.pb"
-test_image = "dog.jpg"
+model_name = './models/frozen_darknet_yolov3_model.pb'
 face_mask = BaseAPP(model_name, input_names=['inputs:0'],
                     output_names=['output_boxes:0'])
 
@@ -92,15 +91,15 @@ app = Flask(__name__)
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if request.method == "POST":
+    if request.method == 'POST':
         file = request.files['file']
         img_bytes = file.read()
     image = Image.open(io.BytesIO(img_bytes))
     processed_image = preprocess_image(image, target_size=(416, 416))
-    print("======== Process Id: ========", os.getpid())
+    # print('======== Process Id: ========', os.getpid())
     outputs = face_mask.forward([processed_image])
 
-    return jsonify({"result": outputs[0][0].tolist()})
+    return jsonify({'result': outputs[0][0].tolist()})
 
 
 def batch_prediction(image_bytes_batch):
@@ -116,20 +115,20 @@ streamer = ThreadedStreamer(batch_prediction, batch_size=8)
 
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
-    if request.method == "POST":
+    if request.method == 'POST':
         file = request.files['file']
         img_bytes = file.read()
-    print("======== Process Id: ========", os.getpid())
+    # print('======== Process Id: ========', os.getpid())
     image = Image.open(io.BytesIO(img_bytes))
     results = streamer.predict([image])[0]
 
-    return jsonify({"result": results.tolist()})
+    return jsonify({'result': results.tolist()})
 
 
 @app.route('/', methods=['GET'])
 def index():
-    return jsonify("Hello index!")
+    return jsonify('Hello index!')
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     app.run(debug=False, threaded=True, port=5000)

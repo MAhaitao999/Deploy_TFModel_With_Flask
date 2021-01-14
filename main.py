@@ -74,13 +74,12 @@ class BaseAPP(object):
             output_.append(self.graph.get_tensor_by_name(self.output_names[i]))
 
         results = self.sess.run(output_, feed_dict=input_)
-        print(results[0].shape)
+        # print(results[0].shape)
 
         return results
 
 
-model_name = 'frozen_darknet_yolov3_model.pb'
-test_image = 'dog.jpg'
+model_name = './models/frozen_darknet_yolov3_model.pb'
 face_mask = BaseAPP(model_name, input_names=['inputs:0'],
                     output_names=['output_boxes:0'])
 
