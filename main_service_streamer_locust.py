@@ -53,7 +53,6 @@ class BaseAPP(object):
         Load trained model.
         """
         print("Loading model...")
-
         with tf.io.gfile.GFile(model_filepath, 'rb') as f:  # tf.gfile.GFile
             graph_def = tf.compat.v1.GraphDef()  # tf.GraphDef
             graph_def.ParseFromString(f.read())
@@ -61,13 +60,14 @@ class BaseAPP(object):
         with self.graph.as_default():
             tf.import_graph_def(graph_def, name="")
         self.graph.finalize()
-
         print("Model loading complete!")
         self.sess = tf.compat.v1.Session(graph=self.graph)  # tf.Session
 
     def forward(self, feet_data):
+
+        print("========Current batch is: ========", len(feet_data[0]))
         if len(feet_data) != len(self.input_names):
-            raise Exception("输入个数和喂给的数据个数必须一致")
+            raise Exception("The number of feed_data must satisfy with the length of list input_names!")
         input_ = {}
         for i in range(len(self.input_names)):
             input_[self.graph.get_tensor_by_name(self.input_names[i])] = feet_data[i]
@@ -76,7 +76,6 @@ class BaseAPP(object):
             output_.append(self.graph.get_tensor_by_name(self.output_names[i]))
 
         results = self.sess.run(output_, feed_dict=input_)
-        print(results)
 
         return results
 
@@ -97,6 +96,7 @@ def predict():
     image = Image.open(io.BytesIO(decoded))
     processed_image = preprocess_image(image, target_size=(416, 416))
     outputs = face_mask.forward([processed_image])
+
     return jsonify({"result": outputs[0][0].tolist()})
 
 
@@ -104,10 +104,11 @@ def batch_prediction(image_bytes_batch):
     image_tensors = [preprocess_image(image, target_size=(416, 416)) for image in image_bytes_batch]
     tensor = np.concatenate(image_tensors, axis=0)
     outputs = face_mask.forward([tensor])
+
     return [outputs[0][i] for i in range(len(outputs[0]))]
 
 
-streamer = ThreadedStreamer(batch_prediction, batch_size=18)
+streamer = ThreadedStreamer(batch_prediction, batch_size=8)
 
 
 @app.route('/stream_predict', methods=['POST'])
@@ -123,8 +124,10 @@ def stream_predict():
 
 @app.route('/', methods=['GET'])
 def index():
+    
     return jsonify("Hello index!")
 
 
 if __name__ == "__main__":
+    
     app.run(debug=False, threaded=True, port=5000)

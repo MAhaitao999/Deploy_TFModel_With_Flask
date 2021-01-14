@@ -35,7 +35,7 @@ class MyTaskSet(TaskSet):
             print(res)
             
 
-    @task(1)  # 1代表权重
+    @task(0)  # 1代表权重
     def create_get(self):
         response = self.client.get("/")
         print("Response status code:", response.status_code)

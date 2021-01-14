@@ -1,8 +1,12 @@
+#! /usr/bin/python
 import sys
 import json
 import os
 import time
 import base64
+
+import numpy as np
+
 
 if sys.version_info > (3, 0):
     import http.client as httplib
@@ -40,4 +44,4 @@ if __name__ == '__main__':
 
     res = response.read()
     res = json.loads(res.decode('utf-8'))  # loads not load
-    print(res)
+    print(np.array(res['result']).shape)

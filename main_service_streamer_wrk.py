@@ -66,10 +66,9 @@ class BaseAPP(object):
         self.sess = tf.compat.v1.Session(graph=self.graph)  # tf.Session
 
     def forward(self, feet_data):
-        print("feet_data is:===========================")
-        print(feet_data[0].shape)
+        print("========Current batch is: ========", len(feet_data[0]))
         if len(feet_data) != len(self.input_names):
-            raise Exception("输入个数和喂给的数据个数必须一致")
+            raise Exception("The number of feed_data must satisfy with the length of list input_names!")
         input_ = {}
         for i in range(len(self.input_names)):
             input_[self.graph.get_tensor_by_name(self.input_names[i])] = feet_data[i]
@@ -78,7 +77,7 @@ class BaseAPP(object):
             output_.append(self.graph.get_tensor_by_name(self.output_names[i]))
 
         results = self.sess.run(output_, feed_dict=input_)
-        print(results)
+        # print(results)
 
         return results
 
@@ -98,23 +97,18 @@ def predict():
         img_bytes = file.read()
     image = Image.open(io.BytesIO(img_bytes))
     processed_image = preprocess_image(image, target_size=(416, 416))
-    print("=================", os.getpid())
-    print("Hello world")
-    face_mask.forward([processed_image])
-    return jsonify("hello world")
+    print("======== Process Id: ========", os.getpid())
+    outputs = face_mask.forward([processed_image])
+
+    return jsonify({"result": outputs[0][0].tolist()})
 
 
 def batch_prediction(image_bytes_batch):
     image_tensors = [preprocess_image(image, target_size=(416, 416)) for image in image_bytes_batch]
     tensor = np.concatenate(image_tensors, axis=0)
-    print("tensor's shape is: ", tensor.shape)
     outputs = face_mask.forward([tensor])
-    print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-    print("本批次有多少个output: ", len(outputs))
-    print("非常重要的结果outputs is: ", outputs[0].shape)
-    print(outputs[0][0].shape)
+
     return [outputs[0][i] for i in range(len(outputs[0]))]
-    # return ["hello world" for i in range(len(outputs[0]))]
 
 
 streamer = ThreadedStreamer(batch_prediction, batch_size=8)
@@ -125,9 +119,9 @@ def stream_predict():
     if request.method == "POST":
         file = request.files['file']
         img_bytes = file.read()
+    print("======== Process Id: ========", os.getpid())
     image = Image.open(io.BytesIO(img_bytes))
     results = streamer.predict([image])[0]
-    print("*********************results is:", results.shape)
 
     return jsonify({"result": results.tolist()})
 
@@ -138,8 +132,4 @@ def index():
 
 
 if __name__ == "__main__":
-    with open(r"dog.jpg", "rb") as f:
-        image_bytes = f.read()
-    image = Image.open(io.BytesIO(image_bytes))
-    batch_result = batch_prediction([image] * 8)
     app.run(debug=False, threaded=True, port=5000)
