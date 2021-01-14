@@ -15,7 +15,7 @@ local LastBoundary = "--" .. Boundary .. "--"
 
 local CRLF = "\r\n"
 
-local Filename = "cat.jpg"
+local Filename = "dog.jpg"
 local FileBody = read_bin_file(Filename)
 
 local ContentDisposition = "Content-Disposition: form-data; name=\"file\"; filename=\"" .. Filename .. "\""
