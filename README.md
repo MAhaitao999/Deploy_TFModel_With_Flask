@@ -26,11 +26,22 @@ make
 - GPU: None
 
 ### Performance comparison of different deployment(ms)
+
+All the results are tested with ApacheBench.
+
+```sh
+ab -n 100 -c 24 -T 'application/json' -H "accept: application/json" -p dog_req.json $url
+```
+
 || 50% | 66% | 75% | 80% | 90% | 95% | 98% | 99% | 100% | rps(#/s)
 ---|---|---|---|---|---|---|---|---|---|---
-threaded=False, processes=1 | 4631 | 4649 | 4661 | 4670 | 4689 | 4694 | 4700 | 4703 | 4854 | 21.47
-threaded=True, processes=1 | 389 | 540 | 705 | 2095 | 16671 | 23675 | 26182 | 26387 | 26536 | 27.08
-gunicorn -w 8 -b 127.0.0.1:5000 main:app | 3596 | 3784 | 3903 | 3950 | 4018 | 4065 | 4111 | 4163 | 4311 | 26.68
+threaded=False, processes=1 | 4994 | 5000 | 5012 | 5055 | 5067 | 5073 | 5075 | 5075 | 5075 | 4.79
+threaded=True, processes=1 | 4207 | 4380 | 4521 | 4679 | 6212 | 6288 | 7109 | 7132 | 7132 | 5.42
+gunicorn -w 8 -b 127.0.0.1:5000 main:app | 1605 | 1627 | 1657 | 1662 | 1712 | 1745 | 1793 | 1882 | 1882 | 14.66
+main_service_streamer_locust.py batch_size = 2| 4684 | 4709 | 4732 | 4756 | 4761 | 4763 | 4766 | 4766 | 4766 | 5.10
+main_service_streamer_locust.py batch_size = 4| 4720 | 4742 | 4780 | 4785 | 4791 | 4873 | 4898 | 4898 | 4898 | 5.04
+main_service_streamer_locust.py batch_size = 8| 4767 | 4841 | 4860 | 4917 | 4964 | 5091 | 5309 | 5369 | 5369 | 4.98
+main_service_streamer_locust.py batch_size = 16| 4816 | 4883 | 4913 | 4920 | 5001 | 5181 | 5905 | 6333 | 6333 | 4.97
 
 
 ### Tips:

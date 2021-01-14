@@ -107,7 +107,7 @@ def batch_prediction(image_bytes_batch):
     return [outputs[0][i] for i in range(len(outputs[0]))]
 
 
-streamer = ThreadedStreamer(batch_prediction, batch_size=8)
+streamer = ThreadedStreamer(batch_prediction, batch_size=16)
 
 
 @app.route('/stream_predict', methods=['POST'])
