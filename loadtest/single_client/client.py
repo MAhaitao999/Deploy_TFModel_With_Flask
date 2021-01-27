@@ -44,4 +44,6 @@ if __name__ == '__main__':
 
     res = response.read()
     res = json.loads(res.decode('utf-8'))  # loads not load
-    print(np.array(res['result']).shape)
+    results = np.array(res['result'])
+    # results = results.reshape((6, -1, 85))
+    print(results.shape)

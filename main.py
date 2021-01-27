@@ -26,7 +26,8 @@ def preprocess_image(image, target_size):
     if image.mode != 'RGB':
         image = image.convert('RGB')
     image = image.resize(target_size)
-    image = img_to_array(image)
+    image = img_to_array(image)  # , dtype='uint8')
+    # print("image is: ", image)
     image = np.expand_dims(image, axis=0)
 
     return image
@@ -79,9 +80,9 @@ class BaseAPP(object):
         return results
 
 
-model_name = './models/frozen_darknet_yolov3_model.pb'
-face_mask = BaseAPP(model_name, input_names=['inputs:0'],
-                    output_names=['output_boxes:0'])
+model_name = './models/spark_recognition.pb'
+face_mask = BaseAPP(model_name, input_names=['input_image:0'],
+                    output_names=['output_classes:0'])
 
 app = Flask(__name__)
 
@@ -92,11 +93,11 @@ def predict():
     encoded = message['image']
     decoded = base64.b64decode(encoded)
     image = Image.open(io.BytesIO(decoded))
-    processed_image = preprocess_image(image, target_size=(416, 416))
+    processed_image = preprocess_image(image, target_size=(224, 224))
     outputs = face_mask.forward([processed_image])
     
     return jsonify({'result': outputs[0][0].tolist()})
 
 
 if __name__ == '__main__':
-    app.run(debug=False, threaded=True, processes=1)
+    app.run(debug=True, threaded=True, processes=1)

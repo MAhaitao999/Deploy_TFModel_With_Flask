@@ -100,7 +100,7 @@ def predict():
 
 
 def batch_prediction(image_bytes_batch):
-    image_tensors = [preprocess_image(image, target_size=(416, 416)) for image in image_bytes_batch]
+    image_tensors = [preprocess_image(image[0], target_size=(416, 416)) for image in image_bytes_batch]
     tensor = np.concatenate(image_tensors, axis=0)
     outputs = face_mask.forward([tensor])
 
@@ -113,10 +113,21 @@ streamer = ThreadedStreamer(batch_prediction, batch_size=16)
 @app.route('/stream_predict', methods=['POST'])
 def stream_predict():
     message = request.get_json(force=True)
-    encoded = message['image']
-    decoded = base64.b64decode(encoded)
-    image = Image.open(io.BytesIO(decoded))
-    results = streamer.predict([image])[0]
+    encoded = message['params']
+    # print(encoded)
+    n_obj = len(encoded)
+    print("number of object is: ", n_obj)
+    provided_inputs = []
+    for i in range(n_obj):
+        decoded_i = base64.b64decode(encoded[i]['data'])
+        image_i = Image.open(io.BytesIO(decoded_i))
+        provided_inputs.append([image_i, i])
+    results = streamer.predict(provided_inputs)
+    # print(len(results))
+    # res_len = len(results)
+    # for i in range(res_len):
+    #     print(results[i].shape)
+    results = np.array(results)
 
     return jsonify({'result': results.tolist()})
 
@@ -129,4 +140,4 @@ def index():
 
 if __name__ == '__main__':
     
-    app.run(debug=False, threaded=True, port=5000)
+    app.run(debug=True, threaded=True, port=5000)

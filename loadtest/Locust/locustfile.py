@@ -1,5 +1,6 @@
 import json
 import base64
+import random
 
 import numpy as np
 from locust import HttpLocust, TaskSet, task
@@ -9,7 +10,21 @@ def img2json(path):
     f = open(path, 'rb')
     jpg = f.read()
     image_databytes = base64.b64encode(jpg)
-    post_data = {"image": image_databytes.decode('utf-8')}
+    # post_data = {"image": image_databytes.decode('utf-8')}
+    n_obj = random.randint(4, 7)
+    n_obj = 6
+    print(n_obj)
+    params = [{
+        'id': '0',
+        'type': 'jpeg',
+        'data': image_databytes.decode('utf-8'),
+    }]
+
+    params = params * n_obj
+    post_data = {
+        'client_id': 'xxx',
+        'params': params,
+    }
     send_data = post_data
     json_data = json.dumps(send_data, ensure_ascii=False)
 
